@@ -226,13 +226,17 @@ function showResult() {
 function loadVoices() {
   voices = speechSynthesis.getVoices().filter((voice) => voice.lang.startsWith("en"));
   elements.voiceSelect.innerHTML = "";
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "-1";
+  defaultOption.textContent = "端末のデフォルト音声（英語）";
+  elements.voiceSelect.append(defaultOption);
   voices.forEach((voice, index) => {
     const option = document.createElement("option");
     option.value = String(index);
     option.textContent = `${voice.name} (${voice.lang})`;
     elements.voiceSelect.append(option);
   });
-  selectedVoice = voices[Number(elements.voiceSelect.value)] || voices[0] || null;
+  selectedVoice = null;
 }
 
 elements.play.addEventListener("click", () => {
