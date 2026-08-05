@@ -118,12 +118,19 @@ let answered = false;
 let voices = [];
 let selectedVoice = null;
 let speechRate = 0.85;
+let activeUtterance = null;
+
+function stopSpeech() {
+  activeUtterance = null;
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  elements.play.classList.remove("playing");
+  elements.play.setAttribute("aria-label", "問題の音声を再生");
+}
 
 function renderQuestion() {
   const question = questions[current];
   answered = false;
-  speechSynthesis.cancel();
-  elements.play.classList.remove("playing");
+  stopSpeech();
   elements.counter.textContent = `QUESTION ${current + 1} / ${questions.length}`;
   elements.score.textContent = `${score} PTS`;
   elements.progress.style.width = `${((current + 1) / questions.length) * 100}%`;
@@ -155,7 +162,7 @@ function speak(rate = speechRate) {
     return;
   }
 
-  speechSynthesis.cancel();
+  stopSpeech();
   const question = questions[current];
   const answer = question.words[question.answer].word;
   const utterance = new SpeechSynthesisUtterance(question.sentence.replace("___", answer));
@@ -163,10 +170,19 @@ function speak(rate = speechRate) {
   utterance.rate = rate;
   utterance.pitch = 1;
   if (selectedVoice) utterance.voice = selectedVoice;
-  utterance.onstart = () => elements.play.classList.add("playing");
-  utterance.onend = () => elements.play.classList.remove("playing");
-  utterance.onerror = () => elements.play.classList.remove("playing");
-  speechSynthesis.speak(utterance);
+  activeUtterance = utterance;
+  utterance.onstart = () => {
+    if (activeUtterance !== utterance) return;
+    elements.play.classList.add("playing");
+    elements.play.setAttribute("aria-label", "音声を停止");
+  };
+  utterance.onend = () => {
+    if (activeUtterance === utterance) stopSpeech();
+  };
+  utterance.onerror = () => {
+    if (activeUtterance === utterance) stopSpeech();
+  };
+  window.speechSynthesis.speak(utterance);
 }
 
 function selectAnswer(index) {
@@ -240,9 +256,8 @@ function loadVoices() {
 }
 
 elements.play.addEventListener("click", () => {
-  if (speechSynthesis.speaking) {
-    speechSynthesis.cancel();
-    elements.play.classList.remove("playing");
+  if ("speechSynthesis" in window && window.speechSynthesis.speaking) {
+    stopSpeech();
   } else {
     speak();
   }
@@ -267,6 +282,13 @@ elements.rateRange.addEventListener("input", () => {
 
 document.addEventListener("keydown", (event) => {
   if (elements.settings.open) return;
+  const target = event.target;
+  if (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "A"].includes(target.tagName))
+  ) {
+    return;
+  }
   if (event.code === "Space") {
     event.preventDefault();
     speak();
