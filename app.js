@@ -25,11 +25,11 @@ const questions = [
     words: [
       { word: "light", ipa: "/laɪt/" },
       { word: "right", ipa: "/raɪt/" },
-      { word: "write", ipa: "/raɪt/" },
+      { word: "night", ipa: "/naɪt/" },
     ],
     answer: 0,
     sentence: "The word ___ is on the card.",
-    label: "子音 /l/ と /r/",
+    label: "子音 /l/・/r/・/n/",
     note: "「light」の /l/ は、舌先を上の前歯の裏につけます。",
   },
   {
