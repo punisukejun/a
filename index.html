@@ -15,16 +15,16 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="#" aria-label="Sound Check ホーム">
+      <div class="brand" aria-label="Sound Check">
         <span class="brand-mark" aria-hidden="true">
           <i></i><i></i><i></i><i></i><i></i>
         </span>
-        <span>Sound Check</span>
-      </a>
+        <span lang="en">Sound Check</span>
+      </div>
       <div class="header-actions">
         <div class="streak" aria-label="連続正解数">
           <span aria-hidden="true">🔥</span>
-          <strong id="streakCount">0</strong>
+          <strong id="streakCount" aria-live="polite">0</strong>
           <span>連続</span>
         </div>
         <button class="icon-button" id="settingsButton" type="button" aria-label="音声設定を開く">
@@ -38,7 +38,7 @@
 
     <main>
       <section class="intro">
-        <p class="eyebrow">LISTENING PRACTICE</p>
+        <p class="eyebrow" lang="en">LISTENING PRACTICE</p>
         <h1>聞こえた単語は<br /><em>どれ？</em></h1>
         <p class="lead">日本人が迷いやすい英語の音を、短い文の中で聞き分けよう。</p>
       </section>
@@ -76,7 +76,7 @@
 
         <div class="choices" id="choices" role="group" aria-label="回答の選択肢"></div>
 
-        <div class="feedback" id="feedback" aria-live="polite">
+        <div class="feedback" id="feedback" role="status" aria-live="polite">
           <div class="feedback-icon"></div>
           <div>
             <strong id="feedbackTitle"></strong>
@@ -97,10 +97,10 @@
       <form method="dialog">
         <div class="dialog-heading">
           <div>
-            <p class="eyebrow">AUDIO SETTINGS</p>
+            <p class="eyebrow" lang="en">AUDIO SETTINGS</p>
             <h2>音声設定</h2>
           </div>
-          <button class="icon-button close-button" value="cancel" aria-label="閉じる">×</button>
+          <button class="icon-button close-button" id="closeSettingsButton" type="button" aria-label="閉じる">×</button>
         </div>
         <label>
           英語音声
@@ -111,8 +111,8 @@
           <span id="rateValue">0.85×</span>
           <input id="rateRange" type="range" min="0.6" max="1.1" value="0.85" step="0.05" />
         </label>
-        <p class="dialog-note">利用できる音声は、お使いのブラウザや端末によって異なります。</p>
-        <button class="save-button" value="default">設定を保存</button>
+        <p class="dialog-note">変更はすぐに適用・保存されます。利用できる音声はブラウザや端末によって異なります。</p>
+        <button class="save-button" id="doneSettingsButton" type="button">閉じる</button>
       </form>
     </dialog>
 

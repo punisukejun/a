@@ -1,25 +1,25 @@
 const questions = [
   {
     words: [
-      { word: "cot", ipa: "/kɑːt/" },
+      { word: "cot", ipa: "/kɑt/" },
       { word: "cut", ipa: "/kʌt/" },
       { word: "cat", ipa: "/kæt/" },
     ],
     answer: 2,
     sentence: "I heard her say ___ clearly.",
-    label: "母音 /ɑː/・/ʌ/・/æ/",
-    note: "「cat」の /æ/ は、口を横に開いて「あ」と「え」の間の音です。",
+    label: "アメリカ英語の母音 /ɑ/・/ʌ/・/æ/",
+    note: "「cat」の /æ/ は、あごを下げ、舌を前方の低い位置にして出す「あ」と「え」の間の音です。",
   },
   {
     words: [
       { word: "ship", ipa: "/ʃɪp/" },
-      { word: "sheep", ipa: "/ʃiːp/" },
+      { word: "sheep", ipa: "/ʃip/" },
       { word: "sip", ipa: "/sɪp/" },
     ],
     answer: 1,
     sentence: "Please write the word ___ here.",
-    label: "/ɪ/・/iː/ と /ʃ/・/s/",
-    note: "「sheep」は /iː/ を長く、口角を横に引いて発音します。",
+    label: "/ɪ/・/i/ と /ʃ/・/s/",
+    note: "「sheep」の /i/ は「ship」の /ɪ/ より舌を高く前に置く、緊張した母音です。長さだけに頼らず音質も聞きましょう。",
   },
   {
     words: [
@@ -58,29 +58,29 @@ const questions = [
     words: [
       { word: "think", ipa: "/θɪŋk/" },
       { word: "sink", ipa: "/sɪŋk/" },
-      { word: "thing", ipa: "/θɪŋ/" },
+      { word: "zinc", ipa: "/zɪŋk/" },
     ],
     answer: 0,
     sentence: "He asked me to repeat ___ slowly.",
-    label: "子音 /θ/ と /s/",
+    label: "語頭の子音 /θ/・/s/・/z/",
     note: "「think」の /θ/ は、舌先を歯の間に軽く挟んで息を出します。",
   },
   {
     words: [
-      { word: "work", ipa: "/wɜːrk/" },
-      { word: "walk", ipa: "/wɔːk/" },
+      { word: "work", ipa: "/wɝk/" },
+      { word: "walk", ipa: "/wɔk/" },
       { word: "woke", ipa: "/woʊk/" },
     ],
     answer: 1,
     sentence: "She used the word ___ in class.",
-    label: "母音 /ɜːr/・/ɔː/・/oʊ/",
-    note: "「walk」の母音は、唇を少し丸める長めの /ɔː/ です。",
+    label: "アメリカ英語の母音 /ɝ/・/ɔ/・/oʊ/",
+    note: "「walk」の /ɔ/ は唇を少し丸める母音です。地域によっては /ɑ/ に近く発音されます。",
   },
   {
     words: [
-      { word: "berry", ipa: "/ˈberi/" },
-      { word: "belly", ipa: "/ˈbeli/" },
-      { word: "very", ipa: "/ˈveri/" },
+      { word: "berry", ipa: "/ˈbɛri/" },
+      { word: "belly", ipa: "/ˈbɛli/" },
+      { word: "very", ipa: "/ˈvɛri/" },
     ],
     answer: 0,
     sentence: "Can you say ___ one more time?",
@@ -109,6 +109,8 @@ const elements = {
   voiceSelect: document.querySelector("#voiceSelect"),
   rateRange: document.querySelector("#rateRange"),
   rateValue: document.querySelector("#rateValue"),
+  closeSettings: document.querySelector("#closeSettingsButton"),
+  doneSettings: document.querySelector("#doneSettingsButton"),
 };
 
 let current = 0;
@@ -119,6 +121,17 @@ let voices = [];
 let selectedVoice = null;
 let speechRate = 0.85;
 let activeUtterance = null;
+let quizFinished = false;
+
+try {
+  const savedRate = Number(localStorage.getItem("sound-check-rate"));
+  if (savedRate >= 0.6 && savedRate <= 1.1) speechRate = savedRate;
+} catch {
+  // Storage may be unavailable in private or restricted browsing modes.
+}
+
+elements.rateRange.value = String(speechRate);
+elements.rateValue.textContent = `${speechRate.toFixed(2).replace(/0$/, "")}×`;
 
 function stopSpeech() {
   activeUtterance = null;
@@ -135,7 +148,7 @@ function renderQuestion() {
   elements.score.textContent = `${score} PTS`;
   elements.progress.style.width = `${((current + 1) / questions.length) * 100}%`;
   elements.contrast.textContent = question.label;
-  elements.sentence.innerHTML = `“${question.sentence.replace("___", "<span>___</span>")}”`;
+  elements.sentence.innerHTML = `<span lang="en">“${question.sentence.replace("___", "<span>___</span>")}”</span>`;
   elements.feedback.className = "feedback";
   elements.next.classList.remove("visible");
   elements.choices.innerHTML = "";
@@ -146,8 +159,8 @@ function renderQuestion() {
     button.className = "choice";
     button.innerHTML = `
       <span class="choice-number">0${index + 1}</span>
-      <span class="choice-word">${item.word}</span>
-      <span class="choice-ipa">${item.ipa}</span>
+      <span class="choice-word" lang="en">${item.word}</span>
+      <span class="choice-ipa" aria-hidden="true">${item.ipa}</span>
     `;
     button.addEventListener("click", () => selectAnswer(index));
     elements.choices.append(button);
@@ -166,7 +179,7 @@ function speak(rate = speechRate) {
   const question = questions[current];
   const answer = question.words[question.answer].word;
   const utterance = new SpeechSynthesisUtterance(question.sentence.replace("___", answer));
-  utterance.lang = "en-US";
+  utterance.lang = selectedVoice?.lang || "en-US";
   utterance.rate = rate;
   utterance.pitch = 1;
   if (selectedVoice) utterance.voice = selectedVoice;
@@ -182,7 +195,9 @@ function speak(rate = speechRate) {
   utterance.onerror = () => {
     if (activeUtterance === utterance) stopSpeech();
   };
-  window.speechSynthesis.speak(utterance);
+  window.setTimeout(() => {
+    if (activeUtterance === utterance) window.speechSynthesis.speak(utterance);
+  }, 40);
 }
 
 function selectAnswer(index) {
@@ -196,20 +211,20 @@ function selectAnswer(index) {
   if (index === question.answer) {
     score += 100;
     streak += 1;
-    elements.feedback.classList.add("visible");
     elements.feedback.querySelector(".feedback-icon").textContent = "✓";
     elements.feedbackTitle.textContent = "正解！ よく聞き取れました";
   } else {
     streak = 0;
     buttons[index].classList.add("wrong");
-    elements.feedback.classList.add("visible", "wrong");
     elements.feedback.querySelector(".feedback-icon").textContent = "×";
     elements.feedbackTitle.textContent = `正解は “${question.words[question.answer].word}”`;
   }
 
   elements.feedbackText.textContent = question.note;
+  elements.feedback.className = `feedback visible${index === question.answer ? "" : " wrong"}`;
   elements.score.textContent = `${score} PTS`;
   elements.streak.textContent = streak;
+  elements.streak.parentElement.setAttribute("aria-label", `連続正解数 ${streak}`);
   elements.next.textContent = current === questions.length - 1 ? "結果を見る" : "次の問題へ";
   elements.next.insertAdjacentHTML(
     "beforeend",
@@ -219,6 +234,8 @@ function selectAnswer(index) {
 }
 
 function showResult() {
+  stopSpeech();
+  quizFinished = true;
   const percentage = Math.round((score / (questions.length * 100)) * 100);
   const message =
     percentage >= 80
@@ -229,30 +246,42 @@ function showResult() {
 
   elements.card.innerHTML = `
     <div class="result">
-      <p class="eyebrow">QUIZ COMPLETE</p>
+      <p class="eyebrow" lang="en">QUIZ COMPLETE</p>
       <div class="result-score">${score}<small> pts</small></div>
-      <h2>${questions.length}問中 ${score / 100}問 正解</h2>
+      <h2 id="resultHeading" tabindex="-1">${questions.length}問中 ${score / 100}問 正解</h2>
       <p>${message}</p>
       <button class="next-button visible" id="restartButton" type="button">もう一度挑戦する</button>
     </div>
   `;
+  elements.card.setAttribute("aria-labelledby", "resultHeading");
   document.querySelector("#restartButton").addEventListener("click", () => window.location.reload());
+  document.querySelector("#resultHeading").focus();
 }
 
 function loadVoices() {
-  voices = speechSynthesis.getVoices().filter((voice) => voice.lang.startsWith("en"));
+  if (!("speechSynthesis" in window)) return;
+  const previousVoiceURI = selectedVoice?.voiceURI || elements.voiceSelect.value;
+  let savedVoiceURI = "";
+  try {
+    savedVoiceURI = localStorage.getItem("sound-check-voice") || "";
+  } catch {
+    // Keep the current in-memory selection when storage is unavailable.
+  }
+  voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.startsWith("en"));
   elements.voiceSelect.innerHTML = "";
   const defaultOption = document.createElement("option");
-  defaultOption.value = "-1";
-  defaultOption.textContent = "端末のデフォルト音声（英語）";
+  defaultOption.value = "";
+  defaultOption.textContent = "アメリカ英語のデフォルト音声";
   elements.voiceSelect.append(defaultOption);
-  voices.forEach((voice, index) => {
+  voices.forEach((voice) => {
     const option = document.createElement("option");
-    option.value = String(index);
+    option.value = voice.voiceURI;
     option.textContent = `${voice.name} (${voice.lang})`;
     elements.voiceSelect.append(option);
   });
-  selectedVoice = null;
+  const desiredVoiceURI = previousVoiceURI || savedVoiceURI;
+  selectedVoice = voices.find((voice) => voice.voiceURI === desiredVoiceURI) || null;
+  elements.voiceSelect.value = selectedVoice?.voiceURI || "";
 }
 
 elements.play.addEventListener("click", () => {
@@ -271,17 +300,38 @@ elements.next.addEventListener("click", () => {
   }
 });
 
-elements.settingsButton.addEventListener("click", () => elements.settings.showModal());
+elements.settingsButton.addEventListener("click", () => {
+  loadVoices();
+  if (typeof elements.settings.showModal === "function") elements.settings.showModal();
+  else elements.settings.setAttribute("open", "");
+});
+function closeSettings() {
+  if (typeof elements.settings.close === "function") elements.settings.close();
+  else elements.settings.removeAttribute("open");
+  elements.settingsButton.focus();
+}
+elements.closeSettings.addEventListener("click", closeSettings);
+elements.doneSettings.addEventListener("click", closeSettings);
 elements.voiceSelect.addEventListener("change", () => {
-  selectedVoice = voices[Number(elements.voiceSelect.value)] || null;
+  selectedVoice = voices.find((voice) => voice.voiceURI === elements.voiceSelect.value) || null;
+  try {
+    localStorage.setItem("sound-check-voice", selectedVoice?.voiceURI || "");
+  } catch {
+    // The setting still applies for the current page session.
+  }
 });
 elements.rateRange.addEventListener("input", () => {
   speechRate = Number(elements.rateRange.value);
   elements.rateValue.textContent = `${speechRate.toFixed(2).replace(/0$/, "")}×`;
+  try {
+    localStorage.setItem("sound-check-rate", String(speechRate));
+  } catch {
+    // The setting still applies for the current page session.
+  }
 });
 
 document.addEventListener("keydown", (event) => {
-  if (elements.settings.open) return;
+  if (elements.settings.open || quizFinished || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
   const target = event.target;
   if (
     target instanceof HTMLElement &&
@@ -298,7 +348,7 @@ document.addEventListener("keydown", (event) => {
 
 if ("speechSynthesis" in window) {
   loadVoices();
-  speechSynthesis.onvoiceschanged = loadVoices;
+  window.speechSynthesis.onvoiceschanged = loadVoices;
 }
 
 renderQuestion();

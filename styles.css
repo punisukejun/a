@@ -1,10 +1,10 @@
 :root {
   --ink: #17342d;
-  --muted: #697b76;
+  --muted: #526a64;
   --paper: #f5f4ef;
   --card: #fff;
   --coral: #fb6d51;
-  --coral-dark: #e9553b;
+  --coral-dark: #c8442f;
   --mint: #dbe9e3;
   --green: #2e7d68;
   --red: #d94f48;
@@ -123,6 +123,13 @@ button {
   stroke-width: 1.6;
 }
 
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(46, 125, 104, 0.32);
+  outline-offset: 3px;
+}
+
 main {
   width: min(1050px, calc(100% - 40px));
   margin: 38px auto 48px;
@@ -208,7 +215,7 @@ main {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 14px;
-  color: #8a9894;
+  color: #637771;
   letter-spacing: 0.09em;
 }
 
@@ -288,6 +295,7 @@ main {
 }
 
 .slow-button {
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -296,7 +304,7 @@ main {
   color: var(--green);
   background: transparent;
   font-family: "Noto Sans JP", sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -366,8 +374,8 @@ main {
 .choice-number {
   display: block;
   margin-bottom: 3px;
-  color: #9ba7a3;
-  font-size: 9px;
+  color: #637771;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -380,8 +388,8 @@ main {
 .choice-ipa {
   display: block;
   margin-top: 2px;
-  color: #8c9995;
-  font-size: 10px;
+  color: #637771;
+  font-size: 12px;
 }
 
 .choice.correct {
@@ -476,10 +484,10 @@ main {
 .hint {
   grid-column: 2;
   margin: -48px 0 0;
-  color: #99a39f;
+  color: #60756f;
   text-align: center;
   font-family: "Noto Sans JP", sans-serif;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 kbd {
@@ -565,7 +573,7 @@ kbd {
 .dialog-note {
   color: var(--muted);
   font-family: "Noto Sans JP", sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.7;
 }
 
@@ -582,7 +590,7 @@ kbd {
 
 .result-score {
   margin: 12px 0 8px;
-  color: var(--coral);
+  color: var(--coral-dark);
   font-size: 58px;
   font-weight: 700;
   letter-spacing: -0.06em;
@@ -663,7 +671,7 @@ kbd {
   }
 
   .quiz-topline {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .listen-area {
