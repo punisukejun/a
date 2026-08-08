@@ -475,8 +475,9 @@ main {
 .quiz-actions {
   margin-top: 16px;
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: 104px 1fr;
   gap: 10px;
+  align-items: end;
 }
 
 .next-button {
@@ -500,7 +501,7 @@ main {
 
 .retry-button {
   width: 100%;
-  height: 46px;
+  height: 40px;
   display: none;
   align-items: center;
   justify-content: center;
