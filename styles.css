@@ -294,6 +294,18 @@ main {
   font-size: 12px;
 }
 
+.natural-badge {
+  margin-right: 5px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  color: var(--green);
+  background: #e7f2ed;
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
 .slow-button {
   min-height: 44px;
   display: flex;

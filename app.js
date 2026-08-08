@@ -121,6 +121,7 @@ let voices = [];
 let selectedVoice = null;
 let speechRate = 0.85;
 let activeUtterance = null;
+let activeAudio = null;
 let quizFinished = false;
 
 try {
@@ -133,7 +134,12 @@ try {
 elements.rateRange.value = String(speechRate);
 elements.rateValue.textContent = `${speechRate.toFixed(2).replace(/0$/, "")}×`;
 
-function stopSpeech() {
+function stopPlayback() {
+  if (activeAudio) {
+    activeAudio.pause();
+    activeAudio.currentTime = 0;
+    activeAudio = null;
+  }
   activeUtterance = null;
   if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   elements.play.classList.remove("playing");
@@ -143,7 +149,7 @@ function stopSpeech() {
 function renderQuestion() {
   const question = questions[current];
   answered = false;
-  stopSpeech();
+  stopPlayback();
   elements.counter.textContent = `QUESTION ${current + 1} / ${questions.length}`;
   elements.score.textContent = `${score} PTS`;
   elements.progress.style.width = `${((current + 1) / questions.length) * 100}%`;
@@ -167,7 +173,7 @@ function renderQuestion() {
   });
 }
 
-function speak(rate = speechRate) {
+function speakFallback(rate = speechRate) {
   if (!("speechSynthesis" in window)) {
     elements.feedback.classList.add("visible", "wrong");
     elements.feedbackTitle.textContent = "音声を再生できません";
@@ -175,7 +181,7 @@ function speak(rate = speechRate) {
     return;
   }
 
-  stopSpeech();
+  stopPlayback();
   const question = questions[current];
   const answer = question.words[question.answer].word;
   const utterance = new SpeechSynthesisUtterance(question.sentence.replace("___", answer));
@@ -190,14 +196,34 @@ function speak(rate = speechRate) {
     elements.play.setAttribute("aria-label", "音声を停止");
   };
   utterance.onend = () => {
-    if (activeUtterance === utterance) stopSpeech();
+    if (activeUtterance === utterance) stopPlayback();
   };
   utterance.onerror = () => {
-    if (activeUtterance === utterance) stopSpeech();
+    if (activeUtterance === utterance) stopPlayback();
   };
   window.setTimeout(() => {
     if (activeUtterance === utterance) window.speechSynthesis.speak(utterance);
   }, 40);
+}
+
+function playAudio(slow = false) {
+  stopPlayback();
+  const audio = new Audio(`audio/q${current + 1}${slow ? "-slow" : ""}.mp3`);
+  activeAudio = audio;
+  audio.preload = "auto";
+  audio.onplay = () => {
+    if (activeAudio !== audio) return;
+    elements.play.classList.add("playing");
+    elements.play.setAttribute("aria-label", "音声を停止");
+  };
+  audio.onended = () => {
+    if (activeAudio === audio) stopPlayback();
+  };
+  audio.play().catch(() => {
+    if (activeAudio !== audio) return;
+    activeAudio = null;
+    speakFallback(slow ? 0.6 : speechRate);
+  });
 }
 
 function selectAnswer(index) {
@@ -234,7 +260,7 @@ function selectAnswer(index) {
 }
 
 function showResult() {
-  stopSpeech();
+  stopPlayback();
   quizFinished = true;
   const percentage = Math.round((score / (questions.length * 100)) * 100);
   const message =
@@ -285,13 +311,13 @@ function loadVoices() {
 }
 
 elements.play.addEventListener("click", () => {
-  if ("speechSynthesis" in window && window.speechSynthesis.speaking) {
-    stopSpeech();
+  if (activeAudio || activeUtterance || ("speechSynthesis" in window && window.speechSynthesis.speaking)) {
+    stopPlayback();
   } else {
-    speak();
+    playAudio();
   }
 });
-elements.slow.addEventListener("click", () => speak(0.6));
+elements.slow.addEventListener("click", () => playAudio(true));
 elements.next.addEventListener("click", () => {
   if (current === questions.length - 1) showResult();
   else {
@@ -341,7 +367,7 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.code === "Space") {
     event.preventDefault();
-    speak();
+    playAudio();
   }
   if (["1", "2", "3"].includes(event.key)) selectAnswer(Number(event.key) - 1);
 });

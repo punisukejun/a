@@ -61,7 +61,7 @@
               </svg>
             </button>
           </div>
-          <p class="listen-label">タップして音声を聞く</p>
+          <p class="listen-label"><span class="natural-badge">NATURAL VOICE</span> タップして音声を聞く</p>
           <button class="slow-button" id="slowButton" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Zm4.5 4.2a4 4 0 0 1 0 5.6M18 6.7a7.5 7.5 0 0 1 0 10.6" /></svg>
             ゆっくり再生
@@ -103,15 +103,15 @@
           <button class="icon-button close-button" id="closeSettingsButton" type="button" aria-label="閉じる">×</button>
         </div>
         <label>
-          英語音声
+          予備の英語音声
           <select id="voiceSelect"></select>
         </label>
         <label>
-          再生速度
+          予備音声の再生速度
           <span id="rateValue">0.85×</span>
           <input id="rateRange" type="range" min="0.6" max="1.1" value="0.85" step="0.05" />
         </label>
-        <p class="dialog-note">変更はすぐに適用・保存されます。利用できる音声はブラウザや端末によって異なります。</p>
+        <p class="dialog-note">通常は収録済みのナチュラル音声を再生します。上記設定は、音声ファイルを読み込めない場合に使用されます。</p>
         <button class="save-button" id="doneSettingsButton" type="button">閉じる</button>
       </form>
     </dialog>
