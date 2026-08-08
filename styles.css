@@ -461,6 +461,7 @@ main {
 }
 
 .next-button,
+.retry-button,
 .save-button {
   border: 0;
   border-radius: 12px;
@@ -469,6 +470,13 @@ main {
   font-family: "Noto Sans JP", sans-serif;
   font-weight: 600;
   cursor: pointer;
+}
+
+.quiz-actions {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 10px;
 }
 
 .next-button {
@@ -482,11 +490,33 @@ main {
   font-size: 12px;
 }
 
+.quiz-actions .next-button {
+  margin-top: 0;
+}
+
 .next-button.visible {
   display: flex;
 }
 
-.next-button svg {
+.retry-button {
+  width: 100%;
+  height: 46px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  background: #fff;
+  font-size: 12px;
+}
+
+.retry-button.visible {
+  display: flex;
+}
+
+.next-button svg,
+.retry-button svg {
   width: 17px;
   fill: none;
   stroke: currentColor;

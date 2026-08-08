@@ -103,6 +103,7 @@ const elements = {
   feedbackTitle: document.querySelector("#feedbackTitle"),
   feedbackText: document.querySelector("#feedbackText"),
   next: document.querySelector("#nextButton"),
+  retry: document.querySelector("#retryButton"),
   streak: document.querySelector("#streakCount"),
   settings: document.querySelector("#settingsDialog"),
   settingsButton: document.querySelector("#settingsButton"),
@@ -123,6 +124,8 @@ let speechRate = 0.85;
 let activeUtterance = null;
 let activeAudio = null;
 let quizFinished = false;
+let scoreBeforeAnswer = 0;
+let streakBeforeAnswer = 0;
 
 try {
   const savedRate = Number(localStorage.getItem("sound-check-rate"));
@@ -157,6 +160,7 @@ function renderQuestion() {
   elements.sentence.innerHTML = `<span lang="en">“${question.sentence.replace("___", "<span>___</span>")}”</span>`;
   elements.feedback.className = "feedback";
   elements.next.classList.remove("visible");
+  elements.retry.classList.remove("visible");
   elements.choices.innerHTML = "";
 
   question.words.forEach((item, index) => {
@@ -228,6 +232,8 @@ function playAudio(slow = false) {
 
 function selectAnswer(index) {
   if (answered) return;
+  scoreBeforeAnswer = score;
+  streakBeforeAnswer = streak;
   answered = true;
   const question = questions[current];
   const buttons = [...elements.choices.children];
@@ -257,6 +263,7 @@ function selectAnswer(index) {
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>',
   );
   elements.next.classList.add("visible");
+  elements.retry.classList.add("visible");
 }
 
 function showResult() {
@@ -318,6 +325,15 @@ elements.play.addEventListener("click", () => {
   }
 });
 elements.slow.addEventListener("click", () => playAudio(true));
+elements.retry.addEventListener("click", () => {
+  if (!answered) return;
+  score = scoreBeforeAnswer;
+  streak = streakBeforeAnswer;
+  elements.streak.textContent = streak;
+  elements.streak.parentElement.setAttribute("aria-label", `連続正解数 ${streak}`);
+  renderQuestion();
+  playAudio();
+});
 elements.next.addEventListener("click", () => {
   if (current === questions.length - 1) showResult();
   else {
