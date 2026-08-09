@@ -73,27 +73,36 @@ const questionSets = [
   },
 ];
 
-const questions = questionSets.map((set, setIndex) => {
-  let previousVariant = -1;
+function createRandomQuestion(setIndex, excludedAudio = null) {
+  const set = questionSets[setIndex];
+  let previousAudio = excludedAudio;
   try {
-    const savedVariant = localStorage.getItem(`sound-check-variant-${setIndex}`);
-    if (savedVariant !== null) previousVariant = Number(savedVariant);
+    previousAudio ||= localStorage.getItem(`sound-check-audio-${setIndex}`);
   } catch {
     // Random selection still works when storage is unavailable.
   }
-  const candidates = set.variants.map((_, index) => index).filter((index) => index !== previousVariant);
-  const variantIndex = candidates[Math.floor(Math.random() * candidates.length)];
+  const candidates = set.variants.filter((variant) => variant.audio !== previousAudio);
+  const variant = candidates[Math.floor(Math.random() * candidates.length)];
+  const correctWord = variant.words[variant.answer][0];
+  const shuffledWords = variant.words.map((word) => [...word]);
+  for (let index = shuffledWords.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffledWords[index], shuffledWords[randomIndex]] = [shuffledWords[randomIndex], shuffledWords[index]];
+  }
   try {
-    localStorage.setItem(`sound-check-variant-${setIndex}`, String(variantIndex));
+    localStorage.setItem(`sound-check-audio-${setIndex}`, variant.audio);
   } catch {
     // The selected version only needs to last for this quiz session.
   }
   return {
-    ...set.variants[variantIndex],
+    ...variant,
     label: set.label,
-    words: set.variants[variantIndex].words.map(([word, ipa]) => ({ word, ipa })),
+    answer: shuffledWords.findIndex(([word]) => word === correctWord),
+    words: shuffledWords.map(([word, ipa]) => ({ word, ipa })),
   };
-});
+}
+
+const questions = questionSets.map((_, setIndex) => createRandomQuestion(setIndex));
 
 const elements = {
   card: document.querySelector(".quiz-card"),
@@ -335,6 +344,7 @@ elements.retry.addEventListener("click", () => {
   if (!answered) return;
   score = scoreBeforeAnswer;
   streak = streakBeforeAnswer;
+  questions[current] = createRandomQuestion(current, questions[current].audio);
   elements.streak.textContent = streak;
   elements.streak.parentElement.setAttribute("aria-label", `連続正解数 ${streak}`);
   renderQuestion();
