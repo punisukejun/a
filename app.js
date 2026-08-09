@@ -73,32 +73,40 @@ const questionSets = [
   },
 ];
 
-function createRandomQuestion(setIndex, excludedAudio = null) {
+function createRandomQuestion(setIndex, previousQuestion = null) {
   const set = questionSets[setIndex];
-  let previousAudio = excludedAudio;
+  let previousTarget = previousQuestion?.targetWord || null;
   try {
-    previousAudio ||= localStorage.getItem(`sound-check-audio-${setIndex}`);
+    previousTarget ||= localStorage.getItem(`sound-check-target-${setIndex}`);
   } catch {
     // Random selection still works when storage is unavailable.
   }
-  const candidates = set.variants.filter((variant) => variant.audio !== previousAudio);
-  const variant = candidates[Math.floor(Math.random() * candidates.length)];
-  const correctWord = variant.words[variant.answer][0];
+  const candidates = set.variants.flatMap((variant) =>
+    variant.words.map((_, targetIndex) => ({ variant, targetIndex })),
+  ).filter(({ variant, targetIndex }) => variant.words[targetIndex][0] !== previousTarget);
+  const { variant, targetIndex } = candidates[Math.floor(Math.random() * candidates.length)];
+  const [correctWord, correctIpa] = variant.words[targetIndex];
   const shuffledWords = variant.words.map((word) => [...word]);
   for (let index = shuffledWords.length - 1; index > 0; index -= 1) {
     const randomIndex = Math.floor(Math.random() * (index + 1));
     [shuffledWords[index], shuffledWords[randomIndex]] = [shuffledWords[randomIndex], shuffledWords[index]];
   }
   try {
-    localStorage.setItem(`sound-check-audio-${setIndex}`, variant.audio);
+    localStorage.setItem(`sound-check-target-${setIndex}`, correctWord);
   } catch {
     // The selected version only needs to last for this quiz session.
   }
   return {
     ...variant,
     label: set.label,
+    clip: targetIndex === variant.answer ? variant.audio : `${variant.audio}-a${targetIndex}`,
+    targetWord: correctWord,
     answer: shuffledWords.findIndex(([word]) => word === correctWord),
     words: shuffledWords.map(([word, ipa]) => ({ word, ipa })),
+    note:
+      targetIndex === variant.answer
+        ? variant.note
+        : `「${correctWord}」の発音は ${correctIpa} です。もう一度音声を聞いて、似た音との違いを確認しましょう。`,
   };
 }
 
@@ -227,7 +235,7 @@ function speakFallback(rate = speechRate) {
 
 function playAudio(slow = false) {
   stopPlayback();
-  const audio = new Audio(`audio/${questions[current].audio}${slow ? "-slow" : ""}.mp3`);
+  const audio = new Audio(`audio/${questions[current].clip}${slow ? "-slow" : ""}.mp3`);
   activeAudio = audio;
   audio.preload = "auto";
   audio.onplay = () => {
@@ -344,7 +352,7 @@ elements.retry.addEventListener("click", () => {
   if (!answered) return;
   score = scoreBeforeAnswer;
   streak = streakBeforeAnswer;
-  questions[current] = createRandomQuestion(current, questions[current].audio);
+  questions[current] = createRandomQuestion(current, questions[current]);
   elements.streak.textContent = streak;
   elements.streak.parentElement.setAttribute("aria-label", `連続正解数 ${streak}`);
   renderQuestion();
