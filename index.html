@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=8" />
+    <link rel="stylesheet" href="styles.css?v=9" />
   </head>
   <body>
     <header class="site-header">
@@ -109,6 +109,11 @@
           <button class="icon-button close-button" id="closeSettingsButton" type="button" aria-label="閉じる">×</button>
         </div>
         <label>
+          音量
+          <span id="volumeValue">100%</span>
+          <input id="volumeRange" type="range" min="0" max="1" value="1" step="0.05" />
+        </label>
+        <label>
           予備の英語音声
           <select id="voiceSelect"></select>
         </label>
@@ -117,11 +122,11 @@
           <span id="rateValue">0.85×</span>
           <input id="rateRange" type="range" min="0.6" max="1.1" value="0.85" step="0.05" />
         </label>
-        <p class="dialog-note">通常は収録済みのナチュラル音声を再生します。上記設定は、音声ファイルを読み込めない場合に使用されます。</p>
+        <p class="dialog-note">音量はすべての音声に反映されます。音声と速度の設定は、収録音声を読み込めない場合の予備音声に使用されます。</p>
         <button class="save-button" id="doneSettingsButton" type="button">閉じる</button>
       </form>
     </dialog>
 
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
   </body>
 </html>

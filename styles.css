@@ -607,7 +607,8 @@ kbd {
   accent-color: var(--coral);
 }
 
-#rateValue {
+#rateValue,
+#volumeValue {
   float: right;
   color: var(--ink);
   font-weight: 700;

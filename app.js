@@ -136,6 +136,8 @@ const elements = {
   voiceSelect: document.querySelector("#voiceSelect"),
   rateRange: document.querySelector("#rateRange"),
   rateValue: document.querySelector("#rateValue"),
+  volumeRange: document.querySelector("#volumeRange"),
+  volumeValue: document.querySelector("#volumeValue"),
   closeSettings: document.querySelector("#closeSettingsButton"),
   doneSettings: document.querySelector("#doneSettingsButton"),
 };
@@ -147,6 +149,7 @@ let answered = false;
 let voices = [];
 let selectedVoice = null;
 let speechRate = 0.85;
+let audioVolume = 1;
 let activeUtterance = null;
 let activeAudio = null;
 let quizFinished = false;
@@ -156,12 +159,18 @@ let streakBeforeAnswer = 0;
 try {
   const savedRate = Number(localStorage.getItem("sound-check-rate"));
   if (savedRate >= 0.6 && savedRate <= 1.1) speechRate = savedRate;
+  const savedVolume = localStorage.getItem("sound-check-volume");
+  if (savedVolume !== null && Number(savedVolume) >= 0 && Number(savedVolume) <= 1) {
+    audioVolume = Number(savedVolume);
+  }
 } catch {
   // Storage may be unavailable in private or restricted browsing modes.
 }
 
 elements.rateRange.value = String(speechRate);
 elements.rateValue.textContent = `${speechRate.toFixed(2).replace(/0$/, "")}×`;
+elements.volumeRange.value = String(audioVolume);
+elements.volumeValue.textContent = `${Math.round(audioVolume * 100)}%`;
 
 function stopPlayback() {
   if (activeAudio) {
@@ -218,6 +227,7 @@ function speakFallback(rate = speechRate) {
   utterance.lang = selectedVoice?.lang || "en-US";
   utterance.rate = rate;
   utterance.pitch = 1;
+  utterance.volume = audioVolume;
   if (selectedVoice) utterance.voice = selectedVoice;
   activeUtterance = utterance;
   utterance.onstart = () => {
@@ -240,6 +250,7 @@ function playAudio(slow = false) {
   stopPlayback();
   const audio = new Audio(`audio/${questions[current].clip}${slow ? "-slow" : ""}.mp3`);
   activeAudio = audio;
+  audio.volume = audioVolume;
   audio.preload = "auto";
   audio.onplay = () => {
     if (activeAudio !== audio) return;
@@ -394,6 +405,16 @@ elements.rateRange.addEventListener("input", () => {
   elements.rateValue.textContent = `${speechRate.toFixed(2).replace(/0$/, "")}×`;
   try {
     localStorage.setItem("sound-check-rate", String(speechRate));
+  } catch {
+    // The setting still applies for the current page session.
+  }
+});
+elements.volumeRange.addEventListener("input", () => {
+  audioVolume = Number(elements.volumeRange.value);
+  elements.volumeValue.textContent = `${Math.round(audioVolume * 100)}%`;
+  if (activeAudio) activeAudio.volume = audioVolume;
+  try {
+    localStorage.setItem("sound-check-volume", String(audioVolume));
   } catch {
     // The setting still applies for the current page session.
   }
