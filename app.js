@@ -81,7 +81,10 @@ function createRandomQuestion(setIndex, previousQuestion = null) {
   } catch {
     // Random selection still works when storage is unavailable.
   }
-  const candidates = set.variants.flatMap((variant) =>
+  const availableVariants = previousQuestion
+    ? [set.variants.find((variant) => variant.audio === previousQuestion.audio) || set.variants[0]]
+    : set.variants;
+  const candidates = availableVariants.flatMap((variant) =>
     variant.words.map((_, targetIndex) => ({ variant, targetIndex })),
   ).filter(({ variant, targetIndex }) => variant.words[targetIndex][0] !== previousTarget);
   const { variant, targetIndex } = candidates[Math.floor(Math.random() * candidates.length)];
